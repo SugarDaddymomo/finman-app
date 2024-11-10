@@ -15,21 +15,20 @@ import PasswordHint from "@/components/customComponents/PasswordHint";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { isUserLoggedIn } from "@/util/checkSession";
+import { signup } from "@/util/apiService";
 
 export default function Home() {
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [mobile, setMobile] = useState('');
     const [occupation, setOccupation] = useState('');
-
     const [showFailAlert, setShowFailAlert] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-    const [loading, setLoading] = useState(false); // Loading state
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -41,7 +40,7 @@ export default function Home() {
                 router.push('/dashboard/user');
             }
         }
-        setLoading(false); // reset loading on initial load
+        setLoading(false);
     }, []);
 
     const fetchOccupations = ['Corporate', 'Govt', 'Business', 'Student'];
@@ -80,30 +79,18 @@ export default function Home() {
 
         //apicall
         try {
-            
-            const response = await fetch('http://localhost:8081/api/v1/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            const resultJson = await response.json();
-
-            if (response.ok) {
-                if (resultJson?.result) {
-                    await new Promise((resolve) => setTimeout(resolve, 2000));
-                    setShowSuccessAlert(true);
-                    setTimeout(() => router.push('/login'), 3000);
-                } else {
-                    setErrorMessage(resultJson?.message);
-                    setShowFailAlert(true);
-                }
+            const resultJson = await signup(requestBody);
+    
+            if (resultJson?.result) {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                setShowSuccessAlert(true);
+                setTimeout(() => router.push('/login'), 3000);
             } else {
-                setErrorMessage(resultJson?.message || "Signup failed");
+                setErrorMessage(resultJson?.message);
                 setShowFailAlert(true);
             }
-        } catch (err) {
-            setErrorMessage('Technical error');
+        } catch (err: any) {
+            setErrorMessage(err.message);
             setShowFailAlert(true);
         } finally {
             setLoading(false);
@@ -216,16 +203,11 @@ export default function Home() {
                                                     </SelectItem>
                                                 ))
                                             }
-                                            {/* <SelectItem value="CORPORATE">Corporate</SelectItem>
-                                            <SelectItem value="GOVT">Govt</SelectItem>
-                                            <SelectItem value="BUSINESS">Business</SelectItem>
-                                            <SelectItem value="STUDENT">Student</SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </div>
                             <CardFooter className="flex justify-between mt-4">
-                                {/* <Button variant="outline" type="reset">Cancel</Button> */}
                                 <Button
                                     variant="outline"
                                     type="button"
