@@ -63,6 +63,18 @@ export const getPaginatedAdmins = async (page: number = 0, size: number = 10) =>
   }
 };
 
+export const deleteUser = async (email: string) => {
+  try {
+    const token = getAuthToken();
+    const response = await adminApiInstance.delete(`/users/${email}`, {
+        headers: { Authorization: token },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error deleting user');
+  }
+};
+
 // Create a user
 export const createUser = async (userData: any) => {
   try {

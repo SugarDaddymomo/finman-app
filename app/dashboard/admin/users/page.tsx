@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getPaginatedUsers } from '@/util/apiService';
+import { getPaginatedUsers, deleteUser } from '@/util/apiService';
 import { getUserRole } from "@/util/checkUserRole";
 import Sidebar from '@/components/customComponents/Sidebar';
 import Navbar from '@/components/customComponents/Navbar';
@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { FaLock, FaUnlock } from 'react-icons/fa';
 import { MdDeleteForever, MdToggleOn, MdToggleOff } from "react-icons/md";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 export default function UsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -82,13 +83,33 @@ export default function UsersPage() {
 
     const handleConfirm = async () => {
         if (selectedUserEmail) {
+            let deleteResponse;
             try {
                 if (actionType === 'delete') {
                     //await deleteUser(selectedUserEmail);
+                    deleteResponse = await deleteUser(selectedUserEmail);
+                    // Wrap the delete API call in a promise
+                    // deleteResponse = await toast.promise(
+                    //     deleteUser(selectedUserEmail), // Your delete API call
+                    //     {
+                    //         loading: 'Deleting user...',
+                    //         success: 'User deleted successfully.',
+                    //         error: 'Failed to delete user.',
+                    //     }
+                    // );
+
                 } else if (actionType === 'lock') {
                     //await toggleUserLock(selectedUserEmail);
                 } else if (actionType === 'enable') {
                     //await toggleUserEnable(selectedUserEmail);
+                }
+
+                if (deleteResponse?.result) {
+                    //setNotification({ message: 'User deleted successfully', type: 'success' });
+                    toast.success('User deleted successfully.');
+                } else {
+                    //setNotification({ message: deleteResponse?.message || 'Failed to delete user.', type: 'error' });
+                    toast.error('Failed to delete user.');
                 }
                 // Refetch users to refresh the list
                 const data = await getPaginatedUsers(page, size);
