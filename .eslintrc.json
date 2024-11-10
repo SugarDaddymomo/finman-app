@@ -5,6 +5,7 @@
     "@typescript-eslint/no-unused-vars": "off", // Disable TypeScript unused vars rule
     "react-hooks/exhaustive-deps": "off", // Disable exhaustive-deps warning
     "react/no-unescaped-entities": "off", // Disable unescaped entities warning
-    "@typescript-eslint/no-empty-object-type": "off" // Disable empty object type rule
+    "@typescript-eslint/no-empty-object-type": "off", // Disable empty object type rule,
+    "@typescript-eslint/no-explicit-any": "off" // Disable explicit any rule
   }
 }

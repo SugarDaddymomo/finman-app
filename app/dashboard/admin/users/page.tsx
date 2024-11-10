@@ -27,7 +27,11 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from '@/components/ui/table'
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { FaLock, FaUnlock } from 'react-icons/fa';
+import { MdDeleteForever, MdToggleOn, MdToggleOff } from "react-icons/md";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function UsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -35,6 +39,9 @@ export default function UsersPage() {
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedUserEmail, setSelectedUserEmail] = useState<string | null>(null);
+    const [actionType, setActionType] = useState<'delete' | 'lock' | 'enable' | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -67,6 +74,56 @@ export default function UsersPage() {
         setPage(newPage);
     };
 
+    const openDialog = (email: string, action: 'delete' | 'lock' | 'enable') => {
+        setSelectedUserEmail(email);
+        setActionType(action);
+        setIsDialogOpen(true);
+    };
+
+    const handleConfirm = async () => {
+        if (selectedUserEmail) {
+            try {
+                if (actionType === 'delete') {
+                    //await deleteUser(selectedUserEmail);
+                } else if (actionType === 'lock') {
+                    //await toggleUserLock(selectedUserEmail);
+                } else if (actionType === 'enable') {
+                    //await toggleUserEnable(selectedUserEmail);
+                }
+                // Refetch users to refresh the list
+                const data = await getPaginatedUsers(page, size);
+                setUsers(data.content);
+            } catch (error) {
+                console.error('Error performing action:', error);
+            } finally {
+                setIsDialogOpen(false);
+                setSelectedUserEmail(null);
+                setActionType(null);
+            }
+        }
+    };
+
+    // const handleDeleteClick = (email: string) => {
+    //     setSelectedUserEmail(email);
+    //     setIsDialogOpen(true);
+    // };
+
+    // const handleDeleteConfirm = async () => {
+    //     if (selectedUserEmail) {
+    //         console.log('Deleting user with email:', selectedUserEmail);
+    //         // Call your delete API here
+    //         setIsDialogOpen(false);
+    //         setSelectedUserEmail(null);
+    //     }
+    // };
+
+    // const handleDelete = async (email: string) => {
+    //     //1.popup to confirm deletion
+    //     //2.api call to delete user
+    //     //3. show small notification for success or failure
+    //     console.log('Deleting user with email:', email);
+    // };
+
     if (loading) return <div>Loading...</div>;
 
     return (
@@ -95,17 +152,33 @@ export default function UsersPage() {
                                 <TableHead className="w-[100px]">Email</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Mobile</TableHead>
-                                <TableHead className="text-right">Occupation</TableHead>
+                                <TableHead>Occupation</TableHead>
+                                <TableHead className='text-right'>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {
                                 users.map((user: any) => (
                                     <TableRow key={user.email}>
-                                        <TableCell className="font-medium">{user.email}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
                                         <TableCell>{user.firstName} {user.lastName}</TableCell>
                                         <TableCell>{user.mobile}</TableCell>
-                                        <TableCell className="text-right">{user.occupation}</TableCell>
+                                        <TableCell>{user.occupation}</TableCell>
+                                        <TableCell className="text-right space-x-2">
+                                            <Button className='p-1 text-yellow-500 hover:bg-yellow-500' variant='ghost' size='icon' onClick={() => openDialog(user.email, 'lock')}>
+                                                {
+                                                    user.accountNonLocked ? <FaUnlock size={16} /> : <FaLock size={16} />
+                                                }
+                                            </Button>
+                                            <Button className='p-1 text-blue-500 hover:bg-blue-500' variant='ghost' size='icon' onClick={() => openDialog(user.email, 'enable')}>
+                                                {
+                                                    user.enabled ? <MdToggleOn size={16} /> : <MdToggleOff size={16} />
+                                                }
+                                            </Button>
+                                            <Button className='p-1 text-red-500 hover:bg-red-500' variant='ghost' size='icon' onClick={() => openDialog(user.email, 'delete')}>
+                                                <MdDeleteForever size={16} />
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             }
@@ -151,6 +224,34 @@ export default function UsersPage() {
                 </main>
                 <Footer />
             </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                        {
+                            actionType === 'delete'
+                            ? 'Confirm Deletion'
+                            : actionType === 'lock'
+                            ? 'Confirm Lock'
+                            : actionType === 'enable' || actionType === 'disable'
+                            ? (users.find(u => u.email === selectedUserEmail)?.enabled ? 'Confirm Disable' : 'Confirm Enable')
+                            : ''
+                        }
+                        </DialogTitle>
+                    </DialogHeader>
+                    <p>
+                        {actionType === 'delete'
+                            ? 'Are you sure you want to delete this user?'
+                            : actionType === 'lock'
+                            ? `Are you sure you want to ${users.find(u => u.email === selectedUserEmail)?.accountNonLocked ? 'lock' : 'unlock'} this user?`
+                            : `Are you sure you want to ${users.find(u => u.email === selectedUserEmail)?.enabled ? 'disable' : 'enable'} this user?`}
+                    </p>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>No</Button>
+                        <Button variant="destructive" onClick={handleConfirm}>Yes</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
