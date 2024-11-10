@@ -50,6 +50,19 @@ export const getPaginatedUsers = async (page: number = 0, size: number = 10) => 
   }
 };
 
+export const getPaginatedAdmins = async (page: number = 0, size: number = 10) => {
+  try {
+    const token = getAuthToken();
+    console.log(`TOKEN: ${token}`);
+    const response = await adminApiInstance.get(`/admins?page=${page}&size=${size}`, {
+        headers: { Authorization: token },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error fetching users');
+  }
+};
+
 // Create a user
 export const createUser = async (userData: any) => {
   try {
