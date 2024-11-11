@@ -1,14 +1,12 @@
-// pages/dashboard/admin/users.tsx
-
 'use client'
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPaginatedUsers, deleteUser } from '@/util/apiService';
 import { getUserRole } from "@/util/checkUserRole";
-import Sidebar from '@/components/customComponents/Sidebar';
 import Navbar from '@/components/customComponents/Navbar';
 import Footer from '@/components/customComponents/Footer';
+import { Loader2 } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -33,6 +31,31 @@ import { FaLock, FaUnlock } from 'react-icons/fa';
 import { MdDeleteForever, MdToggleOn, MdToggleOff } from "react-icons/md";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/customComponents/AppSidebar';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+  } from '@/components/ui/breadcrumb';
+import { Separator } from '@/components/ui/separator';
+
+function LoadingOverlay() {
+    return (
+        <div>
+            <div className="fixed inset-0 bg-gray-800 opacity-50 z-40"></div>
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+                <Button variant="outline" disabled className="flex items-center space-x-2">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span>Please wait...</span>
+                </Button>
+            </div>
+        </div>
+    );
+}
 
 export default function UsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -86,18 +109,7 @@ export default function UsersPage() {
             let deleteResponse;
             try {
                 if (actionType === 'delete') {
-                    //await deleteUser(selectedUserEmail);
                     deleteResponse = await deleteUser(selectedUserEmail);
-                    // Wrap the delete API call in a promise
-                    // deleteResponse = await toast.promise(
-                    //     deleteUser(selectedUserEmail), // Your delete API call
-                    //     {
-                    //         loading: 'Deleting user...',
-                    //         success: 'User deleted successfully.',
-                    //         error: 'Failed to delete user.',
-                    //     }
-                    // );
-
                 } else if (actionType === 'lock') {
                     //await toggleUserLock(selectedUserEmail);
                 } else if (actionType === 'enable') {
@@ -105,10 +117,8 @@ export default function UsersPage() {
                 }
 
                 if (deleteResponse?.result) {
-                    //setNotification({ message: 'User deleted successfully', type: 'success' });
                     toast.success('User deleted successfully.');
                 } else {
-                    //setNotification({ message: deleteResponse?.message || 'Failed to delete user.', type: 'error' });
                     toast.error('Failed to delete user.');
                 }
                 // Refetch users to refresh the list
@@ -117,6 +127,7 @@ export default function UsersPage() {
             } catch (error) {
                 console.error('Error performing action:', error);
             } finally {
+                setLoading(false);
                 setIsDialogOpen(false);
                 setSelectedUserEmail(null);
                 setActionType(null);
@@ -124,48 +135,36 @@ export default function UsersPage() {
         }
     };
 
-    // const handleDeleteClick = (email: string) => {
-    //     setSelectedUserEmail(email);
-    //     setIsDialogOpen(true);
-    // };
-
-    // const handleDeleteConfirm = async () => {
-    //     if (selectedUserEmail) {
-    //         console.log('Deleting user with email:', selectedUserEmail);
-    //         // Call your delete API here
-    //         setIsDialogOpen(false);
-    //         setSelectedUserEmail(null);
-    //     }
-    // };
-
-    // const handleDelete = async (email: string) => {
-    //     //1.popup to confirm deletion
-    //     //2.api call to delete user
-    //     //3. show small notification for success or failure
-    //     console.log('Deleting user with email:', email);
-    // };
-
-    if (loading) return <div>Loading...</div>;
+    // if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="flex min-h-screen">
-            <Sidebar />
-            <div className="flex-1 flex flex-col">
+
+        <SidebarProvider>
+            {loading && <LoadingOverlay />}
+            <AppSidebar />
+            <SidebarInset>
                 <Navbar />
+                <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href='/dashboard/admin'>
+                                    Dashboard
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href='/dashboard/admin/users'>
+                                    Users
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </header>
                 <main className="container mx-auto p-8 bg-gray-100 flex-1">
                     <h1 className="text-2xl font-bold mb-4">Users</h1>
-                    {/* <ul>
-                        {users.map((user: any) => (
-                            <li key={user.email} className="mb-2">
-                                <div className="p-4 border rounded shadow">
-                                    <p><strong>Email:</strong> {user.email}</p>
-                                    <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-                                    <p><strong>Mobile:</strong> {user.mobile}</p>
-                                    <p><strong>Occupation:</strong> {user.occupation}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul> */}
                     <Table>
                         <TableCaption>List of All Users</TableCaption>
                         <TableHeader>
@@ -244,35 +243,35 @@ export default function UsersPage() {
                     </div>
                 </main>
                 <Footer />
-            </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                        {
-                            actionType === 'delete'
-                            ? 'Confirm Deletion'
-                            : actionType === 'lock'
-                            ? 'Confirm Lock'
-                            : actionType === 'enable' || actionType === 'disable'
-                            ? (users.find(u => u.email === selectedUserEmail)?.enabled ? 'Confirm Disable' : 'Confirm Enable')
-                            : ''
-                        }
-                        </DialogTitle>
-                    </DialogHeader>
-                    <p>
-                        {actionType === 'delete'
-                            ? 'Are you sure you want to delete this user?'
-                            : actionType === 'lock'
-                            ? `Are you sure you want to ${users.find(u => u.email === selectedUserEmail)?.accountNonLocked ? 'lock' : 'unlock'} this user?`
-                            : `Are you sure you want to ${users.find(u => u.email === selectedUserEmail)?.enabled ? 'disable' : 'enable'} this user?`}
-                    </p>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>No</Button>
-                        <Button variant="destructive" onClick={handleConfirm}>Yes</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                {
+                                    actionType === 'delete'
+                                    ? 'Confirm Deletion'
+                                    : actionType === 'lock'
+                                    ? 'Confirm Lock'
+                                    : actionType === 'enable' || actionType === 'disable'
+                                    ? (users.find(u => u.email === selectedUserEmail)?.enabled ? 'Confirm Disable' : 'Confirm Enable')
+                                    : ''
+                                }
+                            </DialogTitle>
+                        </DialogHeader>
+                        <p>
+                            {actionType === 'delete'
+                                ? 'Are you sure you want to delete this user?'
+                                : actionType === 'lock'
+                                ? `Are you sure you want to ${users.find(u => u.email === selectedUserEmail)?.accountNonLocked ? 'lock' : 'unlock'} this user?`
+                                : `Are you sure you want to ${users.find(u => u.email === selectedUserEmail)?.enabled ? 'disable' : 'enable'} this user?`}
+                        </p>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>No</Button>
+                            <Button variant="destructive" onClick={handleConfirm}>Yes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }

@@ -64,7 +64,7 @@ export default function Home() {
                         <BreadcrumbList>
                             <BreadcrumbItem className="">
                                 <BreadcrumbLink href="/dashboard/admin">
-                                Admin Dashboard
+                                Dashboard
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                         </BreadcrumbList>
