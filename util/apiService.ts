@@ -85,6 +85,22 @@ export const createUser = async (userData: any) => {
   }
 };
 
+export const createAdmin = async (email: string, password: string) => {
+  try {
+    const token = getAuthToken();
+    const userData = {
+      email,
+      password
+    };
+    const response = await adminApiInstance.post('/admin', userData, {
+      headers: { Authorization: token },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error creating admin');
+  }
+};
+
 // Other API functions can be added here in a similar way
 export const signup = async (userData: any) => {
   try {

@@ -10,7 +10,6 @@ import { Loader2 } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -21,7 +20,6 @@ import {
     TableBody,
     TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow
@@ -38,7 +36,6 @@ import {
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
-    BreadcrumbPage,
     BreadcrumbSeparator,
   } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
@@ -135,7 +132,6 @@ export default function UsersPage() {
         }
     };
 
-    // if (loading) return <div>Loading...</div>;
 
     return (
 
@@ -203,12 +199,6 @@ export default function UsersPage() {
                                 ))
                             }
                         </TableBody>
-                        {/* <TableFooter>
-                            <TableRow>
-                                <TableCell colSpan={3}>Total</TableCell>
-                                <TableCell className="text-right">$2,500.00</TableCell>
-                            </TableRow>
-                        </TableFooter> */}
                     </Table>
                     <div className="mt-4">
                         <Pagination>
